@@ -62,7 +62,7 @@ BlockId mapped to a Normal / Anomaly label.
 
 ### Word Count and Class Distribution : 
 
-![EDA: Word Count and Class Distribution](eda27.png)
+![EDA: Word Count and Class Distribution](p1.png)
 
 Log events are very short; word counts cluster between 5 and 15 words. This is characteristic of structured machine logs: they follow templated formats with variable fields (block IDs, IP addresses, operation names). The tight length distribution means padding overhead is minimal and `max_length = 128` tokens is more than sufficient for all logs.
 
@@ -283,7 +283,7 @@ Classification Head (Dropout 0.3, Linear 768 -> 2)
 Prediction: Normal (0) or Anomaly (1)
 ```
 
-![LoRA BERT Architecture](lora_arch.png)
+![LoRA BERT Architecture](p2.png)
 
 ---
 
@@ -354,21 +354,28 @@ The frozen BERT forward pass dominates; the LoRA addition is $O(N \cdot d \cdot 
 ## Project Structure : 
 
 ```
-api/
-app/
-config/
-data/
-  raw/HDFS_v1/
-  processed/
-inference/
-models/
-training/
-checkpoints/
-run.py
-Dockerfile
-requirements.txt
-README.md
-.gitignore
+.
+├── api/
+├── app/
+├── config/
+├── data/
+│   ├── raw/
+│   │   └── HDFS_v1/
+│   │       ├── Event_traces.csv
+│   │       └── anomaly_label.csv
+│   └── processed/
+│       ├── train.csv
+│       ├── val.csv
+│       └── test.csv
+├── inference/
+├── models/
+├── training/
+├── checkpoints/
+├── run.py
+├── Dockerfile
+├── requirements.txt
+├── README.md
+└── .gitignore
 ```
 
 Key scripts :

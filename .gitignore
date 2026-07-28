@@ -11,6 +11,7 @@ __pycache__/
 
 checkpoints/
 data/processed/
+data/raw/
 
 .env
 

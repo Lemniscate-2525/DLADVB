@@ -1,0 +1,16 @@
+torch
+transformers
+peft
+accelerate
+datasets
+sentencepiece
+pandas
+numpy
+scikit-learn
+matplotlib
+fastapi
+uvicorn
+streamlit
+requests
+python-multipart
+tqdm

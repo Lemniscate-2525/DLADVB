@@ -1,10 +1,19 @@
+import torch._dynamo
+
+torch._dynamo.disable()
+torch._dynamo.config.suppress_errors = True
+
 import os
 import time
 
 import torch
+from torch.amp import autocast, GradScaler
+torch.backends.cudnn.benchmark = True
+from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from transformers import get_linear_schedule_with_warmup
-from torch.optim import AdamW
+
+
 
 from config.config import (
     DEVICE,
@@ -29,30 +38,33 @@ def train():
     val_dataset = LogDataset(VAL_FILE)
 
     train_loader = DataLoader(
-        train_dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=True,
-        num_workers=NUM_WORKERS,
-        pin_memory=PIN_MEMORY,
-    )
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    num_workers=NUM_WORKERS,
+    pin_memory=PIN_MEMORY,
+    persistent_workers=True,
+    prefetch_factor=4
+)
 
     val_loader = DataLoader(
-        val_dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=False,
-        num_workers=NUM_WORKERS,
-        pin_memory=PIN_MEMORY,
-    )
+    val_dataset,
+    batch_size=BATCH_SIZE,
+    shuffle=False,
+    num_workers=NUM_WORKERS,
+    pin_memory=PIN_MEMORY,
+    persistent_workers=True,
+    prefetch_factor=4
+)
 
     model = build_model().to(DEVICE)
 
+    scaler = GradScaler("cuda")
+
     optimizer = AdamW(
-    filter(
-        lambda p: p.requires_grad,
-        model.parameters()
-    ),
-    lr=LEARNING_RATE
-)
+        filter(lambda p: p.requires_grad, model.parameters()),
+        lr=LEARNING_RATE,
+    )
 
     total_steps = len(train_loader) * EPOCHS
 
@@ -70,6 +82,8 @@ def train():
 
     for epoch in range(EPOCHS):
 
+        print(f"\nEpoch {epoch + 1}/{EPOCHS}")
+
         model.train()
 
         epoch_loss = 0
@@ -84,19 +98,23 @@ def train():
             attention_mask = batch["attention_mask"].to(DEVICE)
             labels = batch["labels"].to(DEVICE)
 
-            outputs = model(
+            optimizer.zero_grad(set_to_none=True)
+
+            with autocast(device_type="cuda"):
+
+                outputs = model(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 labels=labels,
-            )
+                )
 
-            loss = outputs.loss
+                loss = outputs.loss
 
-            optimizer.zero_grad()
+            scaler.scale(loss).backward()
 
-            loss.backward()
+            scaler.step(optimizer)
 
-            optimizer.step()
+            scaler.update()
 
             scheduler.step()
 
@@ -113,26 +131,17 @@ def train():
 
         precision, recall, f1, val_acc = evaluate(
             model,
-            val_loader
+            val_loader,
         )
 
         print("=" * 60)
-
-        print(f"Epoch {epoch+1}/{EPOCHS}")
-
         print(f"Train Loss      : {avg_loss:.4f}")
-
         print(f"Train Accuracy  : {train_acc:.2f}%")
-
-        print(f"Val Accuracy    : {val_acc:.2f}%")
-
+        print(f"Validation Acc  : {val_acc:.2f}%")
         print(f"Precision       : {precision:.4f}")
-
         print(f"Recall          : {recall:.4f}")
-
         print(f"F1 Score        : {f1:.4f}")
-
-        print(f"Epoch Time      : {time.time()-start:.2f}s")
+        print(f"Epoch Time      : {time.time() - start:.2f}s")
 
         if f1 > best_f1:
 
@@ -147,10 +156,8 @@ def train():
             print("Best model saved.")
 
     print("=" * 60)
-
-    print(f"Training Finished.")
-
-    print(f"Total Time : {(time.time()-total_start)/60:.2f} Minutes")
+    print("Training Finished.")
+    print(f"Total Time : {(time.time() - total_start) / 60:.2f} Minutes")
 
 
 if __name__ == "__main__":

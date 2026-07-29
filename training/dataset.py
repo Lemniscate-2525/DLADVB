@@ -11,30 +11,33 @@ class LogDataset(Dataset):
 
     def __init__(self, csv_file):
 
-        self.data = pd.read_csv(csv_file)
+        self.data = pd.read_csv(str(csv_file))
 
         self.tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 
-    def __len__(self):
-
-        return len(self.data)
-
-    def __getitem__(self, idx):
-
-        log = str(self.data.iloc[idx]["Text"])
-
-        label = int(self.data.iloc[idx]["Label"])
-
-        encoding = self.tokenizer(
-            log,
+        encodings = self.tokenizer(
+            self.data["Text"].astype(str).tolist(),
             truncation=True,
             padding="max_length",
             max_length=MAX_SEQ_LEN,
             return_tensors="pt"
         )
 
+        self.input_ids = encodings["input_ids"]
+        self.attention_mask = encodings["attention_mask"]
+        self.labels = torch.tensor(
+            self.data["Label"].values,
+            dtype=torch.long
+        )
+
+    def __len__(self):
+
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+
         return {
-            "input_ids": encoding["input_ids"].squeeze(0),
-            "attention_mask": encoding["attention_mask"].squeeze(0),
-            "labels": torch.tensor(label, dtype=torch.long)
+            "input_ids": self.input_ids[idx],
+            "attention_mask": self.attention_mask[idx],
+            "labels": self.labels[idx]
         }

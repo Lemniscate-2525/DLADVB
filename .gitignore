@@ -9,10 +9,9 @@ __pycache__/
 .idea/
 .vscode/
 
-checkpoints/
-data/processed/
+checkpoints/*
+!checkpoints/model/
 data/raw/
 
 .env
-
 .cache/

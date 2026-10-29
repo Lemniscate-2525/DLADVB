@@ -1,5 +1,3 @@
-from xml.parsers.expat import model
-
 from transformers import AutoModelForSequenceClassification
 
 from peft import LoraConfig
@@ -39,14 +37,14 @@ def build_model():
     )
 
     trainable = sum(
-    p.numel()
-    for p in model.parameters()
-    if p.requires_grad
+        p.numel()
+        for p in model.parameters()
+        if p.requires_grad
     )
 
     total = sum(
-    p.numel()
-    for p in model.parameters()
+        p.numel()
+        for p in model.parameters()
     )
 
     print(f"\nTrainable Parameters : {trainable:,}")

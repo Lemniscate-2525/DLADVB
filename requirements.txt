@@ -11,6 +11,7 @@ matplotlib
 fastapi
 uvicorn
 streamlit
+gradio
 requests
 python-multipart
 tqdm

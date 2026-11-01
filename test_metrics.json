@@ -1,0 +1,73 @@
+{
+  "test_samples": 400,
+  "batch_size": 16,
+  "accuracy": 1.0,
+  "anomaly_precision": 1.0,
+  "anomaly_recall": 1.0,
+  "anomaly_f1": 1.0,
+  "confusion_matrix": {
+    "labels": [
+      "Normal",
+      "Anomaly"
+    ],
+    "matrix": [
+      [
+        200,
+        0
+      ],
+      [
+        0,
+        200
+      ]
+    ],
+    "interpretation": [
+      [
+        "True Normal predicted Normal",
+        "True Normal predicted Anomaly"
+      ],
+      [
+        "True Anomaly predicted Normal",
+        "True Anomaly predicted Anomaly"
+      ]
+    ]
+  },
+  "true_label_distribution": {
+    "0": 200,
+    "1": 200
+  },
+  "predicted_label_distribution": {
+    "0": 200,
+    "1": 200
+  },
+  "classification_report": {
+    "Normal": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 200.0
+    },
+    "Anomaly": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 200.0
+    },
+    "accuracy": 1.0,
+    "macro avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 400.0
+    },
+    "weighted avg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 400.0
+    }
+  },
+  "batch_inference_elapsed_seconds": 20.478272199747153,
+  "throughput_samples_per_second": 19.53289789775032,
+  "mean_batch_latency_seconds": 0.8191308879898861,
+  "device": "cpu"
+}
